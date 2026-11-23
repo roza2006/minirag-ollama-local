@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# 虚拟环境
+venv_minrag/
+venv/
+.venv/
+
+# 日志（保留 csv 结果，不保留运行日志）
+logs/*.log
+
+# 本地数据 / 备份
+LiHua-World_bak/
+LiHua-World_old*/
+_test*/
+_qa_check/
+*.bak
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+desktop.ini
+Thumbs.db
+
+# 临时探针脚本
+_probe_*.py
+_diag_*.py
+_peek_*.py
+_bench*.py
