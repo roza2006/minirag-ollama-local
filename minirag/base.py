@@ -42,6 +42,11 @@ class QueryParam:
     # rerank_top 条。0 = 关闭（保持上游行为，候选全塞进上下文）。
     rerank_top: int = int(os.getenv("RERANK_TOP", "0"))
 
+    # BM25 稀疏检索补召回：用关键词精确匹配另取一批候选块，与图检索引结果做
+    # RRF 融合。0 = 关闭（保持上游行为）。补进来的块会挤掉排名靠后的旧块，
+    # 上下文总条数不变，便于和基线做同预算对比。
+    bm25_top: int = int(os.getenv("BM25_TOP", "0"))
+
     hl_keywords: list[str] = field(default_factory=list)
     ll_keywords: list[str] = field(default_factory=list)
     # Conversation history support

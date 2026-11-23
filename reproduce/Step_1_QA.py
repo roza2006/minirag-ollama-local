@@ -67,6 +67,9 @@ def get_args():
     parser.add_argument("--response-type", type=str, default=None,
                         help="写进提示词的目标答案格式。上游默认 'Multiple Paragraphs'，"
                              "会让模型写大段散文；改成要求一两句话直接作答通常更准")
+    parser.add_argument("--bm25", type=int, default=0,
+                        help="BM25 稀疏补召回：用关键词精确匹配另取一批候选块，与图检索 RRF 融合，"
+                             "截断回原条数（上下文体积不变）。0=关闭")
     parser.add_argument("--rerank", type=int, default=0,
                         help="块级重排：对全部候选块按与问题的相似度排序，只保留最相关的 K 条。"
                              "0=关闭（上游行为，候选全塞进上下文）")
@@ -164,6 +167,7 @@ def main() -> int:
                     param=QueryParam(mode=args.mode, top_k=args.topk,
                                      hybrid_extra=args.hybrid,
                                      rerank_top=args.rerank,
+                                     bm25_top=args.bm25,
                                      **({"response_type": args.response_type}
                                         if args.response_type else {})),
                 ).replace("\n", " ").replace("\r", " ")

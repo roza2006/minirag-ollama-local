@@ -1397,6 +1397,29 @@ async def _build_mini_query_context(
                 final_chunk_id.append(cid)
                 seen.add(cid)
 
+    # ---- BM25 稀疏补召回 -----------------------------------------------
+    # 向量相似度分不清 "Provence" 和 "Prague"，但这两个词在 BM25 里毫不相干。
+    # 用关键字精确匹配另取一批候选，与图检索结果 RRF 融合；然后截断回原来的
+    # 条数，保证上下文体积不变，这样和基线的对比才是同预算的。
+    bm25_top = int(getattr(query_param, "bm25_top", 0) or 0)
+    if bm25_top > 0:
+        try:
+            from minirag.bm25 import BM25Index, rrf_fuse
+
+            working_dir = (getattr(text_chunks_db, "global_config", None) or {}).get(
+                "working_dir"
+            )
+            index = BM25Index.load_or_build(working_dir) if working_dir else None
+            if index is not None:
+                bm25_ids = index.search(originalquery, top_k=max(bm25_top, 10))
+                # 预算 = 融合前的条数，保证上下文体积与基线完全一致，
+                # 这样比较的是"选哪几块"而不是"塞了多少块"。
+                budget = len(final_chunk_id)
+                final_chunk_id = rrf_fuse([final_chunk_id, bm25_ids])[:budget]
+        except Exception as exc:  # 补召回失败不该影响主流程
+            logger.warning(f"BM25 补召回失败，退回原检索：{exc}")
+
+
     if not len(results_node):
         return None
 

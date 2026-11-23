@@ -1,13 +1,22 @@
 """在同一批题上对比多个配置的答对率。
 
-用法：py -3.12 -u compare_ab.py 基线=logs/Default_scores.csv top_k40=logs/ab_tk40_scores.csv ...
-只用 dataset/LiHua-World/qa/subset60.csv 里的题做对比，保证是同一批题。
+用法：
+    py -3.12 -u compare_ab.py 基线=logs/Default_scores.csv bm25=logs/ab_bm25_scores.csv
+    py -3.12 -u compare_ab.py --subset dataset/LiHua-World/qa/subset_bm25.csv 基线=... ...
+
+默认用 subset60；--subset 可以换成别的题目集合，保证比的是同一批题。
 """
 import csv
 import os
 import sys
 
 SUBSET = "./dataset/LiHua-World/qa/subset60.csv"
+
+args = sys.argv[1:]
+if "--subset" in args:
+    i = args.index("--subset")
+    SUBSET = args[i + 1]
+    args = args[:i] + args[i + 2:]
 
 keys = []
 with open(SUBSET, encoding="utf-8-sig") as fh:
@@ -16,7 +25,7 @@ with open(SUBSET, encoding="utf-8-sig") as fh:
 key_set = set(keys)
 
 results = {}
-for spec in sys.argv[1:]:
+for spec in args:
     if "=" not in spec:
         continue
     name, path = spec.split("=", 1)
